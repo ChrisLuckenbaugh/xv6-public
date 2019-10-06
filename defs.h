@@ -156,6 +156,9 @@ int             fetchint(uint, int*);
 int             fetchstr(uint, char**);
 void            syscall(void);
 
+// sysfile.c
+volatile uint read_count;
+
 // timer.c
 void            timerinit(void);
 

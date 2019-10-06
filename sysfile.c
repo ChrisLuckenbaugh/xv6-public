@@ -16,6 +16,9 @@
 #include "file.h"
 #include "fcntl.h"
 
+// read count as implemented for the getreadcount system call
+extern volatile uint read_count;
+
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
 static int
@@ -52,6 +55,12 @@ fdalloc(struct file *f)
   return -1;
 }
 
+static void increment_read_count(void) {
+  // in line assembly to increment the read_count.
+  // need this to prevent a race condition. 
+   __sync_fetch_and_add(&read_count, 1);
+}
+
 int
 sys_dup(void)
 {
@@ -69,13 +78,25 @@ sys_dup(void)
 int
 sys_read(void)
 {
+  // Increment the read count
+  //read_count++;
+  //__sync_fetch_and_add( &read_count, 1 );
+  increment_read_count();
+
   struct file *f;
   int n;
   char *p;
 
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
     return -1;
+
+
   return fileread(f, p, n);
+}
+
+int 
+sys_getreadcount(void) {
+  return read_count;
 }
 
 int
