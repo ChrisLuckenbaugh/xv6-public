@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "pstat.h"
 
 int
 sys_fork(void)
@@ -18,6 +19,31 @@ sys_exit(void)
 {
   exit();
   return 0;  // not reached
+}
+
+int 
+sys_getpinfo(void) {
+  struct pstat *stats;
+
+  // Get the pstat structure. Return -1 for failure.
+  if (argptr(0, (void *) &stats, sizeof(struct pstat*)) < 0) {
+    return -1;
+  }
+
+  // Enumerate the proc table
+  return getpinfo(stats);
+
+}
+
+
+int
+sys_settickets(void) {
+  int tickets;
+  if (argint(0, &tickets) < 0) {
+    return -1;
+  }
+  
+  return settickets(tickets);
 }
 
 int
